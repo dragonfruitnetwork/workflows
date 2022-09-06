@@ -1,0 +1,89 @@
+name: Dockerise
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        type: string
+        required: true
+
+      webpack:
+        type: string
+        required: false
+
+      dotnet:
+        type: string
+        default: '6.0.x'
+        required: false
+
+      dockerfile:
+        type: string
+        required: false
+        default: 'build/Dockerfile'
+
+      platforms:
+        type: string
+        required: false
+        default: 'linux/amd64'
+
+env:
+  BUILD_OUTPUT: ./build
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ inputs.dotnet }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login into Docker
+        uses: docker/login-action@v2
+        with:
+          registry: lhr.ocir.io
+          username: ${{ secrets.OCI_USERNAME }}
+          password: ${{ secrets.OCI_PASSWORD }}
+
+      - name: Prepare build output folder
+        run: mkdir ${{ env.BUILD_OUTPUT }}
+
+      - name: Webpack
+        if: ${{ inputs.webpack }}
+        env:
+          RELEASE_MODE: 1
+        run: |
+          cd ${{ inputs.webpack }}
+          npm install
+          npm run webpack-script
+
+      - name: Build
+        run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=${{ github.ref_name }} -o ${{ env.BUILD_OUTPUT }}
+
+      - id: meta
+        name: Create metadata
+        uses: docker/metadata-action@v4
+        with:
+          images: lhr.ocir.io/${{ inputs.image }}
+          tags: |
+            type=raw,value=latest
+            type=ref,event=tag
+            type=sha
+
+      - name: Dockerise
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          file: ${{ inputs.dockerfile }}
+          context: ${{ env.BUILD_OUTPUT }}
+          platforms: ${{ inputs.platforms }}
+          tags: ${{ steps.meta.outputs.tags }}
