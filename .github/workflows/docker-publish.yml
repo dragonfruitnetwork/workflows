@@ -27,7 +27,7 @@ on:
         default: 'linux/amd64'
 
 env:
-  BUILD_OUTPUT: ./build
+  BUILD_OUTPUT: ./actions-build-output
 
 jobs:
   build:
