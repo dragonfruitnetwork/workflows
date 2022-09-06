@@ -1,0 +1,37 @@
+name: Code Quality
+
+on:
+  workflow_call:
+    inputs:
+      dotnet:
+        type: string
+        required: false
+        default: '6.0.x'
+
+      solution:
+        type: string
+        required: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+            
+      - name: Install .NET 6.0.x
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ inputs.dotnet }}
+
+      - name: Restore Tools
+        run: dotnet tool restore
+
+      - name: Restore Packages
+        run: dotnet restore
+
+      - name: Run InspectCode
+        run: dotnet jb inspectcode ${{ github.workspace }}/${{ inputs.solution }} --exclude="**/wwwroot/**.*" --exclude="**/*.razor" --output=${{github.workspace}}/inspectcodereport.xml --cachesDir=${{ github.workspace }}/inspectcode --verbosity=WARN --no-build
+
+      - name: Run NVika
+        run: dotnet nvika parsereport "${{ github.workspace }}/inspectcodereport.xml"
