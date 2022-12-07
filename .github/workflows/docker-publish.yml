@@ -67,7 +67,7 @@ jobs:
           npm run webpack-script
 
       - name: Build
-        run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=$GITHUB_REF_NAME -o ${{ env.BUILD_OUTPUT }}
+        run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=${{ github.ref_name }} -o ${{ env.BUILD_OUTPUT }}
 
       - id: meta
         name: Create metadata
