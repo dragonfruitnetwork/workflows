@@ -7,6 +7,11 @@ on:
         type: string
         required: false
         default: '6.0.x'
+        
+      workload-restore:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   publish:
@@ -19,7 +24,10 @@ jobs:
       - name: Install .NET
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: '6.0.x' 
+          dotnet-version: ${{ inputs.dotnet }}
+
+      - name: .NET Workload Restore
+        if: ${{ inputs.workload-restore }}
 
       - name: Restore
         run: dotnet restore
