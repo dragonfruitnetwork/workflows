@@ -28,6 +28,7 @@ jobs:
 
       - name: .NET Workload Restore
         if: ${{ inputs.workload-restore }}
+        run: sudo dotnet workload restore
 
       - name: Restore
         run: dotnet restore
