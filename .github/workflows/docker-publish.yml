@@ -10,6 +10,10 @@ on:
       webpack:
         type: string
         required: false
+        
+      project:
+        type: string
+        required: true
 
       dotnet:
         type: string
@@ -67,7 +71,7 @@ jobs:
           npm run webpack-script
 
       - name: Build
-        run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=${{ github.ref_name }} -o ${{ env.BUILD_OUTPUT }}
+        run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=${{ github.ref_name }} -o ${{ env.BUILD_OUTPUT }} ${{ inputs.project }}
 
       - id: meta
         name: Create metadata
