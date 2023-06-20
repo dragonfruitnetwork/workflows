@@ -7,7 +7,7 @@ on:
         type: string
         required: true
 
-      webpack:
+      bundle:
         type: string
         required: false
         
@@ -63,14 +63,13 @@ jobs:
       - name: Prepare build output folder
         run: mkdir ${{ env.BUILD_OUTPUT }}
 
-      - name: Webpack
-        if: ${{ inputs.webpack }}
+      - name: Bundle
+        if: ${{ inputs.bundle }}
         env:
           RELEASE_MODE: 1
         run: |
-          cd ${{ inputs.webpack }}
-          npm install
-          npm run webpack-script
+          cd ${{ inputs.bundle }}
+          npm install && npm run bundler
 
       - name: Build
         run: dotnet publish --self-contained false -c Release -p:UseAppHost=false -p:Version=${{ github.ref_name }} -o ${{ env.BUILD_OUTPUT }} ${{ inputs.project }}
