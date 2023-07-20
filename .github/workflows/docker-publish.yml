@@ -65,6 +65,8 @@ jobs:
 
       - name: Bundle
         if: ${{ inputs.bundle }}
+        env:
+          RELEASE_MODE: 1
         run: |
           cd ${{ inputs.bundle }}
           npm install && npm run bundler
